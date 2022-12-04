@@ -88,6 +88,5 @@ int main(int argc, char *argv[])
 		cerr << e.what() << '\n';
 	}
 	
-
 	return RUN_ALL_TESTS();
 }
