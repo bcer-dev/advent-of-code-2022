@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <queue>
+#include <stack>
 #include <string>
 #include <boost/algorithm/string.hpp>
 #include <gtest/gtest.h>
@@ -10,14 +10,14 @@ using namespace std;
 class CrateMover2000
 {
 private:
-	vector<queue<string>> boxStacks;
+	vector<stack<char>> boxStacks;
 	vector<string> instructions;
 
 public:
 	CrateMover2000() = default;
 	void loadData(const string& path);
-	void moveCrates(const std::string& instruction);
-	void printResult();
+	void moveCrates();
+	void printResult() const;
 };
 
 // Load and parse the given inputs.
@@ -26,36 +26,89 @@ void CrateMover2000::loadData(const string& path)
 	ifstream inputFile(path);
 	if (!inputFile.is_open())
 		throw runtime_error("Failed to open input file.");
+
+	string line;
+
+	// Find the number of stacks
+	getline(inputFile, line);
+	int numberOfTowers = (line.length() + 1) / 4;
+	inputFile.seekg(0, inputFile.beg);
+
+	for (int i = 0; i < numberOfTowers; i++)
+		boxStacks.push_back(stack<char>());
+
+	// Load stack data
+	while (getline(inputFile, line))
+	{
+		if (line[1] == '1')
+			break;
+
+		for (int i = 1; i < line.length(); i += 4)
+		{
+			if (line[i] == ' ')
+				continue;
+			int index = (i - 1) / 4;
+			boxStacks[index].push(line[i]);
+		}
+	}
+
+	stack<char> tmp;
+	for (auto& st : boxStacks)
+	{
+		while (!st.empty())
+		{
+			tmp.push(st.top());
+			st.pop();
+		}
+
+		st = tmp;
+	}
+
+	// Ignore blank line after stacks
+	getline(inputFile, line);
+
+	while (getline(inputFile, line))
+		instructions.push_back(line);
+
 	inputFile.close();
 }
 
 // Executes an instruction.
-void CrateMover2000::moveCrates(const std::string& instruction)
+void CrateMover2000::moveCrates()
 {
-	// auto tokens = boost::split(instruction, ' ');
+	for (const auto& instruction : instructions)
+	{
+		vector<string> tokens;
+		boost::split(tokens, instruction, boost::is_any_of(" "));
 
-	// int numberOfBoxes = stoi(tokens[1]);
-	// int from = stoi(tokens[3]) - 1;
-	// int to = stoi(tokens[5]) - 1;
-
-	// for (int i = 0; i < numberOfBoxes; i++)
-	// {
-	// 	boxStacks[to].push(boxStacks[from].front());
-	// 	boxStacks[from].pop();
-	// }
+		int from = stoi(tokens[3]) - 1;
+		int to = stoi(tokens[5]) - 1;
+		int moves = stoi(tokens[1]);
+		
+		for (int i = 0; i < moves; i++)
+		{
+			char val = boxStacks[from].top();
+			boxStacks[to].push(val);
+			boxStacks[from].pop();
+		}
+	}
 }
 
-void CrateMover2000::printResult()
+void CrateMover2000::printResult() const
 {
 	for (auto& st : boxStacks)
-		cout << st.front();
+		cout << st.top();
 	cout << '\n';
 }
 
 int main(int argc, char *argv[])
 {
 	testing::InitGoogleTest(&argc, argv);
+
 	CrateMover2000 mover;
-	mover.loadData("input/test1.txt");
+	mover.loadData("input/inputs.txt");
+	mover.moveCrates();
+	mover.printResult();
+	
 	return RUN_ALL_TESTS();
 }
