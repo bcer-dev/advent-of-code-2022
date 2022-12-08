@@ -52,6 +52,7 @@ void CrateMover2000::loadData(const string& path)
 		}
 	}
 
+	// Reverse the stack.
 	stack<char> tmp;
 	for (auto& st : boxStacks)
 	{
