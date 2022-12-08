@@ -7,21 +7,21 @@
 #include <gtest/gtest.h>
 using namespace std;
 
-class CrateMover2000
+class CrateMover9000
 {
 private:
 	vector<stack<char>> boxStacks;
 	vector<string> instructions;
 
 public:
-	CrateMover2000() = default;
+	CrateMover9000() = default;
 	void loadData(const string& path);
 	void moveCrates();
 	void printResult() const;
 };
 
 // Load and parse the given inputs.
-void CrateMover2000::loadData(const string& path)
+void CrateMover9000::loadData(const string& path)
 {
 	ifstream inputFile(path);
 	if (!inputFile.is_open())
@@ -75,7 +75,7 @@ void CrateMover2000::loadData(const string& path)
 }
 
 // Executes an instruction.
-void CrateMover2000::moveCrates()
+void CrateMover9000::moveCrates()
 {
 	for (const auto& instruction : instructions)
 	{
@@ -95,7 +95,7 @@ void CrateMover2000::moveCrates()
 	}
 }
 
-void CrateMover2000::printResult() const
+void CrateMover9000::printResult() const
 {
 	for (auto& st : boxStacks)
 		cout << st.top();
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 {
 	testing::InitGoogleTest(&argc, argv);
 
-	CrateMover2000 mover;
+	CrateMover9000 mover;
 	mover.loadData("input/inputs.txt");
 	mover.moveCrates();
 	mover.printResult();
