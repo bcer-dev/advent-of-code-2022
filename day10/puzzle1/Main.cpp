@@ -59,10 +59,11 @@ int countSignals(const vector<Instruction>& inst)
 		}
 		else
 		{
-			cycles++;
-			if ((cycles + 20) % 40 == 0) { sum += X * cycles; }
-			cycles++;
-			if ((cycles + 20) % 40 == 0) { sum += X * cycles; }
+			for (int i = 0; i < 2; i++)
+			{
+				cycles++;
+				if ((cycles + 20) % 40 == 0) { sum += X * cycles; }
+			}
 			X += op.value;
 		}
 	}
