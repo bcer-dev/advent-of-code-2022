@@ -3,64 +3,67 @@
 #include <vector>
 #include <string>
 #include <gtest/gtest.h>
-#include "CPU.hpp"
 using namespace std;
 
-vector<string> loadInputs(const string& path)
+enum class InstructionType { NoOp, AddX };
+
+struct Instruction
+{
+	InstructionType type {};
+	int value {};
+	static Instruction parse(const string& op);
+};
+
+Instruction Instruction::parse(const string& op)
+{
+	if (op.find("noop") != string::npos)
+	{
+		return { InstructionType::NoOp, 0 };
+	}
+
+	auto space = op.find(' ');
+	auto val = stoi(op.substr(space + 1));
+	return { InstructionType::AddX, val };
+}
+
+vector<Instruction> loadInputs(const string& path)
 {
 	ifstream inputFile(path);
+
 	if (!inputFile.is_open())
 		throw runtime_error("Failed to open input file.");
 
-	vector<string> inputs;
+	vector<Instruction> inputs;
 
 	string line;
 	while (getline(inputFile, line))
-		inputs.push_back(line);
+	{
+		inputs.push_back(Instruction::parse(line));
+	}
 
 	return inputs;
 }
 
-inline int getSignalStrength(int cycle, int signal)
-{
-	return cycle * signal;
-}
-
-inline Instructions parseInstruction(const string& op)
-{
-	if (op == "noop")
-		return Instructions::NoOp;
-	return Instructions::AddX;
-}
-
-int sumOfSignalStrengths(const vector<string>& inputs)
+int countSignals(const vector<Instruction>& inst)
 {
 	int sum = 0;
-	CPU processor;
+	int X = 1, cycles = 0;
 
-	for (const auto& input : inputs)
+	for (auto& op : inst)
 	{
-		auto instruction = parseInstruction(input);
-		auto requiredCycles = static_cast<int>(instruction);
-
-		for (int i = 0; i < requiredCycles; i++)
+		int requiredCycles = (int)op.type + 1;
+		if (op.type == InstructionType::NoOp)
 		{
-			auto cycles = processor.getCycles();
-			auto x = processor.getX();
-			
-			if (((cycles + 1) - 20) % 40 == 0)
-			{
-				sum += (cycles + 1) * x;
-			}
-
-			processor.tick();
+			cycles++;
+			if ((cycles + 20) % 40 == 0) { sum += X * cycles; }
 		}
-
-		if (instruction == Instructions::AddX)
+		else
 		{
-			int space = input.find(' ');
-			int v = stoi(input.substr(space + 1));
-			processor.addX(v);
+			cycles++;
+			if ((cycles + 20) % 40 == 0) { sum += X * cycles; }
+			cycles++;
+			if ((cycles + 20) % 40 == 0) { sum += X * cycles; }
+			X += op.value;
 		}
 	}
 
@@ -70,18 +73,17 @@ int sumOfSignalStrengths(const vector<string>& inputs)
 int main(int argc, char *argv[])
 {
 	testing::InitGoogleTest(&argc, argv);
-	
+
 	try
 	{
 		auto inputs = loadInputs("input/inputs.txt");
-		int sum = sumOfSignalStrengths(inputs);
-		cout << "Result: " << sum << '\n';
+		auto result = countSignals(inputs);
+		cout << "Result: " << result << "\n";
 	}
 	catch(const std::exception& e)
 	{
 		std::cerr << e.what() << '\n';
 	}
-	
 
 	return RUN_ALL_TESTS();
 }
